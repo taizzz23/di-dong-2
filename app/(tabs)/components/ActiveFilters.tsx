@@ -1,5 +1,13 @@
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  ScrollView,
+  StyleSheet 
+} from 'react-native';
 import { X } from "lucide-react-native";
 import { Filters } from "./FilterPanel";
+import { Colors } from '@/constants/theme';
 
 interface ActiveFiltersProps {
   filters: Filters;
@@ -44,26 +52,72 @@ export function ActiveFilters({ filters, onRemoveFilter }: ActiveFiltersProps) {
   }
 
   return (
-    <div className="px-4 py-3 bg-white border-b border-gray-200">
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-gray-600 text-sm">Active filters:</span>
+    <View style={styles.container}>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <Text style={styles.label}>Active filters:</Text>
         {activeFilters.map((filter, index) => (
-          <button
+          <TouchableOpacity
             key={`${filter.type}-${filter.value || filter.label}-${index}`}
-            onClick={() => onRemoveFilter(filter.type, filter.value)}
-            className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors"
+            onPress={() => onRemoveFilter(filter.type, filter.value)}
+            style={styles.filterChip}
           >
-            <span>{filter.label}</span>
-            <X className="w-3 h-3" />
-          </button>
+            <Text style={styles.filterText}>{filter.label}</Text>
+            <X size={12} color={Colors.light.primary} />
+          </TouchableOpacity>
         ))}
-        <button
-          onClick={() => onRemoveFilter("all")}
-          className="text-blue-600 text-sm hover:underline"
+        <TouchableOpacity
+          onPress={() => onRemoveFilter("all")}
+          style={styles.clearAllButton}
         >
-          Clear all
-        </button>
-      </div>
-    </div>
+          <Text style={styles.clearAllText}>Clear all</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: Colors.light.background,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.light.border,
+    paddingVertical: 12,
+  },
+  scrollContent: {
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  label: {
+    fontSize: 14,
+    color: Colors.light.mutedForeground,
+    marginRight: 8,
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: Colors.light.secondary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  filterText: {
+    fontSize: 14,
+    color: Colors.light.primary,
+    fontWeight: '500',
+  },
+  clearAllButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+  clearAllText: {
+    fontSize: 14,
+    color: Colors.light.primary,
+    fontWeight: '500',
+  },
+});
