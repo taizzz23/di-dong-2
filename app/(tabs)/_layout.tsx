@@ -1,23 +1,37 @@
-// app/(tabs)/_layout.tsx
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { Text, View } from 'react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useAuth } from '@/hooks/useAuth'; // ✅ IMPORT useAuth
+import { useAuth } from '@/hooks/useAuth';
 
-// Import các auth components từ thư mục components
+// Import các auth components
 import { ForgotPassword } from './components/ForgotPassword';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const auth = useAuth(); // ✅ LẤY TRẠNG THÁI AUTH
+  const auth = useAuth();
 
-  // NẾU CHƯA ĐĂNG NHẬP: Hiển thị màn hình auth
+  // Hiển thị loading screen
+  if (auth.isLoading) {
+    return (
+      <View style={{ 
+        flex: 1, 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        backgroundColor: Colors.light.background 
+      }}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  // Nếu chưa đăng nhập => Hiển thị auth screens
   if (!auth.isAuthenticated) {
     if (auth.authView === "login") {
       return (
@@ -46,7 +60,7 @@ export default function TabLayout() {
     }
   }
 
-  // NẾU ĐÃ ĐĂNG NHẬP: Hiển thị tabs bình thường
+  // Nếu đã đăng nhập => Hiển thị tabs
   return (
     <Tabs
       screenOptions={{

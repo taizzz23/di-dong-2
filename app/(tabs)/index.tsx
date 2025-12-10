@@ -21,6 +21,7 @@ import { Login } from "./components/Login";
 import { Product, ProductCard } from "./components/ProductCard";
 import { ProductDetail } from "./components/ProductDetail";
 import { Register } from "./components/Register";
+
 export default function App() {
   // ✅ PRODUCTS được di chuyển vào trong component
   const PRODUCTS: Product[] = [
@@ -236,34 +237,35 @@ export default function App() {
   }, [auth.isAuthenticated]);
 
   // Authentication screens
-  if (!auth.isAuthenticated) {
-    if (auth.authView === "login") {
-      return (
-        <Login
-          onLogin={auth.login}
-          onNavigateToRegister={auth.switchToRegister}
-          onNavigateToForgotPassword={auth.switchToForgotPassword}
-        />
-      );
-    } else if (auth.authView === "register") {
-      return (
-        <Register
-          onRegister={auth.register}
-          onNavigateToLogin={auth.switchToLogin}
-        />
-      );
-    }else if (auth.authView === "forgot-password") {
-    // ✅ UNCOMMENT PHẦN NÀY
+ // Authentication screens
+if (!auth.isAuthenticated) {
+  if (auth.authView === "login") {
+    return (
+      <Login
+        onLogin={auth.login}
+        onNavigateToRegister={auth.switchToRegister}
+        onNavigateToForgotPassword={auth.switchToForgotPassword}
+      />
+    );
+  } else if (auth.authView === "register") {
+    return (
+      <Register
+        onRegister={auth.register}
+        onNavigateToLogin={auth.switchToLogin}
+      />
+    );
+  } else if (auth.authView === "forgot-password") {
     return (
       <ForgotPassword
         onBackToLogin={auth.switchToLogin}
-        onResetPassword={(email) => {
+        onResetPassword={(email: string) => {
           console.log("Reset password for:", email);
         }}
       />
     );
   }
-  }
+}
+  
 
   // Main app
   return (

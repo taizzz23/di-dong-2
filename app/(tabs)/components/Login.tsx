@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/theme';
-import { Check, Eye, EyeOff } from "lucide-react-native";
+import { Eye, EyeOff } from "lucide-react-native";
 import { useState } from "react";
 import {
   Image,
@@ -21,7 +21,7 @@ export function Login({ onLogin, onNavigateToRegister, onNavigateToForgotPasswor
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false); // ✅ THÊM STATE NHỚ TÀI KHOẢN
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
   const validateForm = () => {
@@ -55,7 +55,7 @@ export function Login({ onLogin, onNavigateToRegister, onNavigateToForgotPasswor
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
-      {/* Logo ở trên cùng - KHÔNG có vòng tròn đen */}
+      {/* Logo ở trên cùng */}
       <View style={styles.logoContainer}>
         <Image 
           source={require('@/assets/images/logo.png')}
@@ -67,11 +67,11 @@ export function Login({ onLogin, onNavigateToRegister, onNavigateToForgotPasswor
       {/* Tiêu đề tiếng Việt */}
       <View style={styles.header}>
         <Text style={styles.title}>Chào mừng bạn</Text>
-        <Text style={styles.subtitle}>Tìm cho bạn những thứ về máy game</Text>
+        <Text style={styles.subtitle}>đăng nhập để mua sắm</Text>
       </View>
 
       <View style={styles.form}>
-        {/* Email Field - Giữ tiếng Việt */}
+        {/* Email Field */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Email</Text>
           <TextInput
@@ -88,7 +88,7 @@ export function Login({ onLogin, onNavigateToRegister, onNavigateToForgotPasswor
           )}
         </View>
 
-        {/* Password Field - Giữ tiếng Việt */}
+        {/* Password Field */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Password</Text>
           <View style={[styles.passwordContainer, errors.password && styles.inputError]}>
@@ -126,17 +126,17 @@ export function Login({ onLogin, onNavigateToRegister, onNavigateToForgotPasswor
             activeOpacity={0.7}
           >
             <View style={styles.rememberMeContent}>
-              {/* Checkbox - FULL ĐEN khi được chọn */}
+              {/* Checkbox */}
               <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
                 {rememberMe && (
-                  <Check size={14} color={Colors.light.primaryForeground} />
+                  <Text style={styles.checkIcon}>✓</Text>
                 )}
               </View>
               <Text style={styles.rememberMeText}>Nhớ tài khoản</Text>
             </View>
           </TouchableOpacity>
 
-          {/* Quên mật khẩu - Tiếng Việt */}
+          {/* Quên mật khẩu */}
           <TouchableOpacity 
             style={styles.forgotPasswordContainer}
             onPress={onNavigateToForgotPassword}
@@ -146,7 +146,7 @@ export function Login({ onLogin, onNavigateToRegister, onNavigateToForgotPasswor
           </TouchableOpacity>
         </View>
 
-        {/* Nút Đăng Nhập - Tiếng Việt */}
+        {/* Nút Đăng Nhập */}
         <TouchableOpacity 
           style={styles.signInButton}
           onPress={handleSubmit}
@@ -155,7 +155,7 @@ export function Login({ onLogin, onNavigateToRegister, onNavigateToForgotPasswor
           <Text style={styles.signInButtonText}>Đăng Nhập</Text>
         </TouchableOpacity>
 
-        {/* Footer - Tiếng Việt */}
+        {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>
             Không có tài khoản ?{" "}
@@ -183,17 +183,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 40,
   },
-  // Logo Section - ĐƠN GIẢN, không vòng tròn
+  // Logo
   logoContainer: {
     alignItems: 'center',
     marginBottom: 20,
   },
   logo: {
-    width: 120, // Kích thước logo
+    width: 120,
     height: 120,
-    // KHÔNG có background, KHÔNG có border, KHÔNG có shadow
   },
-  // Header với tiêu đề tiếng Việt
+  // Header
   header: {
     alignItems: 'center',
     marginBottom: 40,
@@ -275,7 +274,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  // Checkbox - FULL ĐEN khi được chọn
+  // Checkbox
   checkbox: {
     width: 20,
     height: 20,
@@ -288,8 +287,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   checkboxChecked: {
-    backgroundColor: Colors.light.text, // MÀU ĐEN/ĐẬM
-    borderColor: Colors.light.text, // Viền cũng màu đen
+    backgroundColor: Colors.light.primary,
+    borderColor: Colors.light.primary,
+  },
+  checkIcon: {
+    color: Colors.light.primaryForeground,
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   rememberMeText: {
     color: Colors.light.text,
@@ -327,7 +331,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  // Footer tiếng Việt
+  // Footer
   footer: {
     alignItems: 'center',
   },
