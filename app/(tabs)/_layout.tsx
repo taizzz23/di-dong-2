@@ -8,10 +8,11 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuth } from '@/hooks/useAuth';
 
-// Import các auth components
+// Import các components - THÊM WELCOME
 import { ForgotPassword } from './components/ForgotPassword';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
+import { Welcome } from './components/Welcome';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -31,7 +32,12 @@ export default function TabLayout() {
     );
   }
 
-  // Nếu chưa đăng nhập => Hiển thị auth screens
+  // 1. Nếu chưa xem Welcome => Hiển thị Welcome screen
+  if (!auth.hasSeenWelcome) {
+    return <Welcome onGetStarted={auth.completeWelcome} />;
+  }
+
+  // 2. Nếu chưa đăng nhập => Hiển thị auth screens
   if (!auth.isAuthenticated) {
     if (auth.authView === "login") {
       return (
@@ -60,7 +66,7 @@ export default function TabLayout() {
     }
   }
 
-  // Nếu đã đăng nhập => Hiển thị tabs
+  // 3. Nếu đã xem Welcome và đã đăng nhập => Hiển thị tabs
   return (
     <Tabs
       screenOptions={{
