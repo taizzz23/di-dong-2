@@ -14,7 +14,6 @@ import { useCart } from "../../hooks/useCart";
 import { useFilters } from "../../hooks/useFilters";
 import { useModal } from "../../hooks/useModal";
 import { useNavigation } from "../../hooks/useNavigation";
-
 import { ActiveFilters } from "./components/ActiveFilters";
 import { Cart } from "./components/Cart";
 import { FilterPanel } from "./components/FilterPanel";
@@ -111,7 +110,6 @@ export default function Index() {
             onSearchChange={filterState.updateSearchQuery}
             onFilterClick={filterModal.open}
           />
-
           <ActiveFilters
             filters={filterState.filters}
             onRemoveFilter={filterState.removeFilter}
