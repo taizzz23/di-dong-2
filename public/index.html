@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Danh sách Product</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f2f3f5;
+      padding: 20px;
+    }
+    .card {
+      background: #fff;
+      padding: 12px;
+      margin-bottom: 16px;
+      border-radius: 6px;
+      max-width: 600px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.1);
+    }
+    pre {
+      white-space: pre-wrap;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Danh sách Product</h2>
+<div id="products">Đang tải dữ liệu...</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // ✅ CONFIG ĐÃ SỬA LỖI "const"
+  const firebaseConfig = {
+    apiKey: "AIzaSyA1P4h3VtporU2s_Vrj0WsPqughKf4AIJw",
+    authDomain: "didong2-9ce2a.firebaseapp.com",
+    projectId: "didong2-9ce2a",
+    storageBucket: "didong2-9ce2a.firebasestorage.app",
+    messagingSenderId: "791074240366",
+    appId: "1:791074240366:web:d877fb3af937c299f4337f",
+    measurementId: "G-DJN4BK7W50"
+  };
+
+  // Khởi tạo Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  async function loadProducts() {
+    const productsDiv = document.getElementById("products");
+    
+    try {
+      console.log("Đang kết nối Firestore...");
+      const snapshot = await getDocs(collection(db, "products"));
+      console.log("Đã lấy được dữ liệu:", snapshot.size, "sản phẩm");
+      
+      productsDiv.innerHTML = "";
+
+      if (snapshot.empty) {
+        productsDiv.innerHTML = "📭 Không có sản phẩm nào trong collection 'products'";
+        return;
+      }
+
+      snapshot.forEach(doc => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        card.innerHTML = `
+          <b>📋 ID:</b> ${doc.id}<br>
+          <hr>
+          <pre>${JSON.stringify(doc.data(), null, 2)}</pre>
+        `;
+
+        productsDiv.appendChild(card);
+      });
+      
+    } catch (e) {
+      console.error("Chi tiết lỗi:", e);
+      productsDiv.innerHTML = `
+        <div style="color: red; background: #ffe6e6; padding: 15px; border-radius: 5px;">
+          <b>⚠️ Lỗi kết nối Firestore:</b><br>
+          ${e.message}<br><br>
+          <b>Kiểm tra:</b>
+          <ol>
+            <li>Firestore Database đã được tạo trong project?</li>
+            <li>Collection "products" có tồn tại?</li>
+            <li>Firestore Rules cho phép đọc dữ liệu?</li>
+          </ol>
+        </div>
+      `;
+    }
+  }
+
+  // Tải sản phẩm khi trang load
+  loadProducts();
+</script>
+
+</body>
+</html>
