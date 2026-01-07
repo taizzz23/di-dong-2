@@ -94,7 +94,7 @@ export function FilterPanel({ filters, onFiltersChange, onClose }: FilterPanelPr
 
   // Format price với comma separator
   const formatPrice = (price: number) => {
-    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return price.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
   return (
@@ -148,7 +148,11 @@ export function FilterPanel({ filters, onFiltersChange, onClose }: FilterPanelPr
                 <View style={styles.priceSeparator} />
                 <Text style={styles.priceValue}>${formatPrice(localFilters.priceRange.max)}</Text>
               </View>
-              <ChevronRight size={20} color={Colors.light.mutedForeground} />
+              <ChevronRight 
+                size={20} 
+                color={Colors.light.mutedForeground}
+                style={{ transform: [{ rotate: showPriceInput ? '90deg' : '0deg' }] }}
+              />
             </TouchableOpacity>
             
             {showPriceInput && (
