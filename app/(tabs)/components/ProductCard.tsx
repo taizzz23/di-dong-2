@@ -1,12 +1,15 @@
 import { Colors } from '@/constants/theme';
 import { Plus, Star } from "lucide-react-native";
 import {
+  Dimensions,
   Image,
   StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from 'react-native';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export interface Product {
   id: string;
@@ -57,32 +60,31 @@ export function ProductCard({ product, onAddToCart, onProductClick }: ProductCar
             source={{ uri: safeImage }}
             style={styles.image}
             resizeMode="cover"
-            
           />
         </View>
 
         {/* Product Info */}
         <View style={styles.infoContainer}>
           <View style={styles.topRow}>
-            <Text style={styles.brand}>{safeBrand}</Text>
+            <Text style={styles.brand} numberOfLines={1}>{safeBrand}</Text>
             <View style={styles.conditionBadge}>
               <Text style={styles.conditionText}>{safeCondition}</Text>
             </View>
           </View>
           
-          <Text style={styles.name}>{safeName}</Text>
+          <Text style={styles.name} numberOfLines={2}>{safeName}</Text>
           
           <View style={styles.ratingContainer}>
-            <Star size={16} fill={Colors.light.chart1} color={Colors.light.chart1} />
+            <Star size={14} fill={Colors.light.chart1} color={Colors.light.chart1} />
             {/* ✅ SAFE RATING */}
             <Text style={styles.rating}>{safeRating.toFixed(1)}</Text>
-            <Text style={styles.location}>• {safeLocation}</Text>
+            <Text style={styles.location} numberOfLines={1}>• {safeLocation}</Text>
           </View>
 
           <View style={styles.bottomRow}>
             {/* ✅ SAFE PRICE */}
             <Text style={styles.price}>${formattedPrice}</Text>
-            <Text style={styles.stock}>
+            <Text style={styles.stock} numberOfLines={1}>
               {safeStock > 0 ? `${safeStock} in stock` : "Out of stock"}
             </Text>
           </View>
@@ -99,7 +101,7 @@ export function ProductCard({ product, onAddToCart, onProductClick }: ProductCar
             safeStock === 0 && styles.disabledButton
           ]}
         >
-          <Plus size={20} color={
+          <Plus size={18} color={
             safeStock === 0 ? Colors.light.mutedForeground : Colors.light.primaryForeground
           } />
           <Text style={[
@@ -114,6 +116,8 @@ export function ProductCard({ product, onAddToCart, onProductClick }: ProductCar
   );
 }
 
+const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2; // 2 columns with padding
+
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.light.background,
@@ -122,6 +126,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.light.border,
     overflow: 'hidden',
     marginBottom: 16,
+    width: CARD_WIDTH, // 👈 Fixed width
+    flexShrink: 1,
   },
   productContent: {
     flex: 1,
@@ -136,83 +142,92 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   infoContainer: {
-    padding: 16,
+    padding: 12, // 👈 Reduced padding
+    flex: 1,
   },
   topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 4,
   },
   brand: {
-    fontSize: 14,
+    fontSize: 12, // 👈 Smaller font
     color: Colors.light.mutedForeground,
+    flex: 1,
+    marginRight: 8,
   },
   conditionBadge: {
     backgroundColor: Colors.light.muted,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
   conditionText: {
-    fontSize: 12,
+    fontSize: 10, // 👈 Smaller font
     color: Colors.light.mutedForeground,
     fontWeight: '500',
   },
   name: {
-    fontSize: 16,
+    fontSize: 14, // 👈 Smaller font
     fontWeight: '600',
     color: Colors.light.text,
-    marginBottom: 8,
+    marginBottom: 6,
+    lineHeight: 18,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginBottom: 12,
+    marginBottom: 8,
+    flexWrap: 'wrap',
   },
   rating: {
-    fontSize: 14,
+    fontSize: 12, // 👈 Smaller font
     color: Colors.light.text,
     fontWeight: '500',
   },
   location: {
-    fontSize: 14,
+    fontSize: 12, // 👈 Smaller font
     color: Colors.light.mutedForeground,
+    flex: 1,
   },
   bottomRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: 'auto',
   },
   price: {
-    fontSize: 18,
+    fontSize: 16, // 👈 Adjusted size
     fontWeight: 'bold',
     color: Colors.light.text,
   },
   stock: {
-    fontSize: 14,
+    fontSize: 11, // 👈 Smaller font
     color: Colors.light.mutedForeground,
+    textAlign: 'right',
+    flexShrink: 1,
   },
   buttonContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingHorizontal: 12,
+    paddingBottom: 12,
   },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 6,
     backgroundColor: Colors.light.primary,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: 8, // 👈 Reduced padding
+    borderRadius: 6,
   },
   disabledButton: {
     backgroundColor: Colors.light.muted,
   },
   buttonText: {
     color: Colors.light.primaryForeground,
-    fontSize: 16,
+    fontSize: 14, // 👈 Smaller font
     fontWeight: '600',
   },
   disabledButtonText: {

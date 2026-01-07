@@ -1,18 +1,18 @@
 import { Colors } from '@/constants/theme';
 import { useState } from 'react';
 import {
-    Dimensions,
-    Image,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Dimensions,
+  Image,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 interface WelcomeProps {
-  onGetStarted: () => void;
+  onGetStarted?: () => void; // 👈 THÊM ? để optional
 }
 
 export function Welcome({ onGetStarted }: WelcomeProps) {
@@ -48,12 +48,20 @@ export function Welcome({ onGetStarted }: WelcomeProps) {
     if (currentSlide < slides.length - 1) {
       setCurrentSlide(currentSlide + 1);
     } else {
-      onGetStarted();
+      if (onGetStarted) {
+        onGetStarted(); // 👈 KIỂM TRA TRƯỚC KHI GỌI
+      } else {
+        console.warn('⚠️ onGetStarted is not defined');
+      }
     }
   };
 
   const handleSkip = () => {
-    onGetStarted();
+    if (onGetStarted) {
+      onGetStarted(); // 👈 KIỂM TRA TRƯỚC KHI GỌI
+    } else {
+      console.warn('⚠️ onGetStarted is not defined');
+    }
   };
 
   return (

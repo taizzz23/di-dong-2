@@ -1,14 +1,20 @@
 import { Colors } from '@/constants/theme';
+import { loginUser } from '@/firebase/authApi';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View
 } from 'react-native';
 
-import { Product, getProducts } from "../../firebase/productApi"; // 👈 IMPORT HÀM GET PRODUCTS
+import { Product, getProducts } from "../../firebase/productApi";
 
+import { Filter } from 'lucide-react-native';
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
 import { useFilters } from "../../hooks/useFilters";
@@ -23,80 +29,198 @@ import { Login } from "./components/Login";
 import { ProductCard } from "./components/ProductCard";
 import { ProductDetail } from "./components/ProductDetail";
 import { Register } from "./components/Register";
+import { Welcome } from "./components/Welcome";
 
 export default function Index() {
-  // 🔥 DATA TỪ FIREBASE
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [showWelcome, setShowWelcome] = useState<boolean | null>(null);
+  const [isCheckingWelcome, setIsCheckingWelcome] = useState(true);
 
   const auth = useAuth();
   const cart = useCart();
   const navigation = useNavigation();
   const filterModal = useModal();
 
-  // 🔥 LOAD FIREBASE - FIX LỖI
+  // Kiểm tra xem user đã xem Welcome chưa
   useEffect(() => {
-    const loadProducts = async () => {
+    const checkFirstTime = async () => {
       try {
-        // ✅ FIX: Gọi hàm getProducts() thay vì setProducts()
-        const data = await getProducts(); // Hàm này phải có trong productApi.ts
-        setProducts(data);
-      } catch (e) {
-        console.log("Firebase error:", e);
-        setProducts([]); // ✅ Set mảng rỗng nếu có lỗi
+        setIsCheckingWelcome(true);
+        const hasSeenWelcome = await AsyncStorage.getItem('hasSeenWelcome');
+        console.log('🔍 Check welcome status:', hasSeenWelcome);
+        
+        if (hasSeenWelcome === 'true') {
+          setShowWelcome(false);
+        } else {
+          setShowWelcome(true);
+        }
+      } catch (error) {
+        console.error('❌ Error checking welcome status:', error);
+        setShowWelcome(false);
       } finally {
-        setLoading(false);
+        setIsCheckingWelcome(false);
       }
     };
 
-    loadProducts();
+    checkFirstTime();
   }, []);
 
-  // 🔥 FILTER DÙNG DATA THẬT
+  // Load products từ Firebase
+  useEffect(() => {
+    if (showWelcome === false && auth.isAuthenticated) {
+      const loadProducts = async () => {
+        try {
+          console.log("📦 Loading products from Firebase...");
+          const data = await getProducts();
+          console.log(`✅ Loaded ${data.length} products`);
+          setProducts(data);
+        } catch (error) {
+          console.error("❌ Error loading products:", error);
+          setProducts([]);
+          Alert.alert("Lỗi", "Không thể tải sản phẩm. Vui lòng thử lại.");
+        } finally {
+          setLoadingProducts(false);
+        }
+      };
+
+      loadProducts();
+    }
+  }, [showWelcome, auth.isAuthenticated]);
+
+  // Xử lý khi user bấm "Bắt đầu" từ Welcome screen
+  const handleGetStarted = async () => {
+    try {
+      console.log('🎯 User clicked Get Started from Welcome');
+      await AsyncStorage.setItem('hasSeenWelcome', 'true');
+      setShowWelcome(false);
+      console.log('✅ Welcome screen hidden, showing login...');
+    } catch (error) {
+      console.error('❌ Error saving welcome status:', error);
+      setShowWelcome(false);
+    }
+  };
+
+  // Xử lý login với Firebase
+  const handleLogin = async (email: string, password: string): Promise<void> => {
+    try {
+      console.log("🟢 [Index] Starting Firebase login for:", email);
+      
+      const firebaseUser = await loginUser(email, password);
+      console.log("✅ [Index] Firebase login successful:", firebaseUser.uid);
+      
+      console.log("🔄 [Index] Calling auth.login with email and password");
+      await auth.login(email, password);
+      
+      console.log("🎉 [Index] Login process completed!");
+      
+    } catch (error: any) {
+      console.error("🔴 [Index] Login error:", error);
+      throw error;
+    }
+  };
+
+  // Xử lý register với Firebase
+  const handleRegister = async (name: string, email: string, password: string): Promise<void> => {
+    try {
+      console.log("🟢 [Index] Starting Firebase registration for:", email);
+      
+      console.log("🔄 [Index] Calling auth.register with name, email, password");
+      await auth.register(name, email, password);
+      
+      console.log("🎉 [Index] Registration process completed!");
+      
+    } catch (error: any) {
+      console.error("🔴 [Index] Registration error:", error);
+      throw error;
+    }
+  };
+
   const filterState = useFilters(products);
 
-  // 🔥 FIX LỖI DEPENDENCY: thêm cart.clearCart vào dependencies
+  // Clear cart khi logout
   useEffect(() => {
     if (!auth.isAuthenticated) {
+      console.log("🛒 Clearing cart due to logout");
       cart.clearCart();
     }
-  }, [auth.isAuthenticated, cart.clearCart]); // ✅ Thêm cart.clearCart
+  }, [auth.isAuthenticated, cart]); // 👈 THÊM cart VÀO DEPENDENCY
 
-  // AUTH
-  if (!auth.isAuthenticated) {
-    if (auth.authView === "login") {
-      return <Login
-        onLogin={auth.login}
-        onNavigateToRegister={auth.switchToRegister}
-        onNavigateToForgotPassword={auth.switchToForgotPassword}
-      />;
-    }
-
-    if (auth.authView === "register") {
-      return <Register
-        onRegister={auth.register}
-        onNavigateToLogin={auth.switchToLogin}
-      />;
-    }
-
-    if (auth.authView === "forgot-password") {
-      return <ForgotPassword
-        onBackToLogin={auth.switchToLogin}
-        onResetPassword={(email) => console.log(email)}
-      />;
-    }
-  }
-
-  // LOADING
-  if (loading) {
+  // Hiển thị loading khi đang kiểm tra welcome
+  if (isCheckingWelcome) {
     return (
       <View style={styles.center}>
-        <Text>Loading products...</Text>
+        <ActivityIndicator size="large" color={Colors.light.primary} />
+        <Text style={styles.loadingText}>Đang tải...</Text>
       </View>
     );
   }
 
-  // MAIN
+  // Hiển thị Welcome screen nếu chưa xem
+  if (showWelcome === true) {
+    console.log('👋 Rendering Welcome screen');
+    return <Welcome onGetStarted={handleGetStarted} />;
+  }
+
+  // Hiển thị loading khi kiểm tra auth
+  if (auth.isLoading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={Colors.light.primary} />
+        <Text style={styles.loadingText}>Đang kiểm tra đăng nhập...</Text>
+      </View>
+    );
+  }
+
+  // Hiển thị màn hình auth nếu chưa đăng nhập
+  if (!auth.isAuthenticated) {
+    console.log("🔐 Rendering auth view:", auth.authView);
+    
+    if (auth.authView === "login") {
+      return (
+        <Login
+          onLogin={handleLogin}
+          onNavigateToRegister={auth.switchToRegister}
+          onNavigateToForgotPassword={auth.switchToForgotPassword}
+        />
+      );
+    }
+
+    if (auth.authView === "register") {
+      return (
+        <Register
+          onRegister={handleRegister}
+          onNavigateToLogin={auth.switchToLogin}
+        />
+      );
+    }
+
+    if (auth.authView === "forgot-password") {
+      return (
+        <ForgotPassword
+          onBackToLogin={auth.switchToLogin}
+          onResetPassword={(email) => {
+            console.log("Reset password for:", email);
+            Alert.alert("Thông báo", "Hướng dẫn reset mật khẩu đã được gửi đến email của bạn.");
+          }}
+        />
+      );
+    }
+  }
+
+  // Hiển thị loading products
+  if (loadingProducts) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={Colors.light.primary} />
+        <Text style={styles.loadingText}>Đang tải sản phẩm...</Text>
+      </View>
+    );
+  }
+
+  // Hiển thị app chính sau khi đã đăng nhập
+  console.log("🏠 Rendering main app for user:", auth.user?.email);
+
   return (
     <View style={styles.container}>
       {navigation.view === "home" && (
@@ -110,18 +234,39 @@ export default function Index() {
             onSearchChange={filterState.updateSearchQuery}
             onFilterClick={filterModal.open}
           />
+          
           <ActiveFilters
             filters={filterState.filters}
             onRemoveFilter={filterState.removeFilter}
           />
 
-          <ScrollView style={styles.main}>
-            <Text style={styles.title}>
-              {filterState.filteredProducts.length} Products Found
-            </Text>
+          <ScrollView 
+            style={styles.main}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
+            {/* Results Header với Filter Button */}
+            <View style={styles.resultsHeader}>
+              <Text style={styles.title}>
+                {filterState.filteredProducts.length} sản phẩm được tìm thấy
+              </Text>
+              
+              <TouchableOpacity
+                onPress={filterModal.open}
+                style={styles.filterButton}
+              >
+                <Filter size={18} color={Colors.light.primary} />
+                <Text style={styles.filterButtonText}>Filter</Text>
+              </TouchableOpacity>
+            </View>
 
             {filterState.filteredProducts.length === 0 ? (
-              <Text>No products</Text>
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>Không tìm thấy sản phẩm nào</Text>
+                <Text style={styles.emptySubtext}>
+                  Thử tìm kiếm với từ khóa khác hoặc xóa bộ lọc
+                </Text>
+              </View>
             ) : (
               <View style={styles.productsGrid}>
                 {filterState.filteredProducts.map(product => (
@@ -152,6 +297,7 @@ export default function Index() {
           onBack={navigation.goToHome}
           onUpdateQuantity={cart.updateQuantity}
           onRemoveItem={cart.removeItem}
+          onClearCart={cart.clearCart} // 👈 ĐÃ THÊM DÒNG NÀY
         />
       )}
 
@@ -167,18 +313,80 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.light.background },
-  main: { padding: 16 },
-  title: { fontSize: 18, fontWeight: "bold" },
+  container: { 
+    flex: 1, 
+    backgroundColor: Colors.light.background 
+  },
+  main: { 
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+  },
+  resultsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 16,
+  },
+  title: { 
+    fontSize: 16, 
+    fontWeight: "600",
+    color: Colors.light.text 
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: Colors.light.muted,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+  },
+  filterButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: Colors.light.text,
+  },
   productsGrid: { 
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: 16 
+    gap: 16,
   },
   center: { 
     flex: 1, 
     justifyContent: "center", 
-    alignItems: "center" 
-  }
+    alignItems: "center",
+    backgroundColor: Colors.light.background
+  },
+  loadingText: { // 👈 THÊM STYLE NÀY
+    marginTop: 10,
+    fontSize: 14,
+    color: Colors.light.mutedForeground,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    minHeight: 300,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.light.text,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: Colors.light.mutedForeground,
+    textAlign: 'center',
+    paddingHorizontal: 20,
+  },
 });

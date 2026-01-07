@@ -2,6 +2,8 @@ import { Colors } from '@/constants/theme';
 import { Eye, EyeOff } from "lucide-react-native";
 import { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Image,
   ScrollView,
   StyleSheet,
@@ -12,40 +14,74 @@ import {
 } from 'react-native';
 
 interface LoginProps {
-  onLogin: (email: string, password: string) => void;
+  onLogin: (email: string, password: string) => Promise<void>;
   onNavigateToRegister: () => void;
   onNavigateToForgotPassword: () => void;
 }
 
-export function Login({ onLogin, onNavigateToRegister, onNavigateToForgotPassword }: LoginProps) {
+export function Login({ 
+  onLogin, 
+  onNavigateToRegister, 
+  onNavigateToForgotPassword 
+}: LoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false); // ✅ THÊM STATE NHỚ TÀI KHOẢN
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{ 
+    email?: string; 
+    password?: string;
+    firebase?: string;
+  }>({});
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
 
-    if (!email) {
-      newErrors.email = "Email is required";
+    if (!email.trim()) {
+      newErrors.email = "Vui lòng nhập email";
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Email is invalid";
+      newErrors.email = "Email không hợp lệ";
     }
 
     if (!password) {
-      newErrors.password = "Password is required";
+      newErrors.password = "Vui lòng nhập mật khẩu";
     } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+      newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
-    if (validateForm()) {
-      onLogin(email, password);
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    console.log("🟢 [Login] Starting handleSubmit...");
+    setIsLoading(true);
+    setErrors({});
+
+    try {
+      console.log("🟢 [Login] Calling onLogin callback...");
+      await onLogin(email, password);
+      
+      console.log("✅ [Login] onLogin completed successfully");
+      // KHÔNG cần Alert ở đây vì auth sẽ tự chuyển trang
+
+    } catch (error: any) {
+      console.error("🔴 [Login] Error in handleSubmit:", error);
+      
+      let errorMessage = error.message || "Đăng nhập thất bại. Vui lòng thử lại.";
+      
+      setErrors(prev => ({ ...prev, firebase: errorMessage }));
+      
+      // Hiển thị Alert lỗi
+      Alert.alert("Lỗi đăng nhập", errorMessage);
+      
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -55,7 +91,7 @@ export function Login({ onLogin, onNavigateToRegister, onNavigateToForgotPasswor
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
-      {/* Logo ở trên cùng */}
+      {/* Logo */}
       <View style={styles.logoContainer}>
         <Image 
           source={require('@/assets/images/logo.png')}
@@ -64,11 +100,18 @@ export function Login({ onLogin, onNavigateToRegister, onNavigateToForgotPasswor
         />
       </View>
 
-      {/* Tiêu đề tiếng Việt */}
+      {/* Tiêu đề */}
       <View style={styles.header}>
         <Text style={styles.title}>Chào mừng bạn</Text>
         <Text style={styles.subtitle}>đăng nhập để mua sắm</Text>
       </View>
+
+      {/* Hiển thị lỗi Firebase nếu có */}
+      {errors.firebase && (
+        <View style={styles.firebaseErrorContainer}>
+          <Text style={styles.firebaseErrorText}>{errors.firebase}</Text>
+        </View>
+      )}
 
       <View style={styles.form}>
         {/* Email Field */}
@@ -82,6 +125,7 @@ export function Login({ onLogin, onNavigateToRegister, onNavigateToForgotPasswor
             placeholderTextColor={Colors.light.mutedForeground}
             keyboardType="email-address"
             autoCapitalize="none"
+            editable={!isLoading}
           />
           {errors.email && (
             <Text style={styles.errorText}>{errors.email}</Text>
@@ -90,20 +134,22 @@ export function Login({ onLogin, onNavigateToRegister, onNavigateToForgotPasswor
 
         {/* Password Field */}
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Password</Text>
+          <Text style={styles.label}>Mật khẩu</Text>
           <View style={[styles.passwordContainer, errors.password && styles.inputError]}>
             <TextInput
               style={styles.passwordInput}
               value={password}
               onChangeText={setPassword}
-              placeholder="Enter your password"
+              placeholder="Nhập mật khẩu của bạn"
               placeholderTextColor={Colors.light.mutedForeground}
               secureTextEntry={!showPassword}
+              editable={!isLoading}
             />
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
               style={styles.eyeButton}
               accessibilityLabel={showPassword ? "Hide password" : "Show password"}
+              disabled={isLoading}
             >
               {showPassword ? (
                 <EyeOff size={20} color={Colors.light.mutedForeground} />
@@ -124,6 +170,7 @@ export function Login({ onLogin, onNavigateToRegister, onNavigateToForgotPasswor
             style={styles.rememberMeContainer}
             onPress={() => setRememberMe(!rememberMe)}
             activeOpacity={0.7}
+            disabled={isLoading}
           >
             <View style={styles.rememberMeContent}>
               {/* Checkbox */}
@@ -141,6 +188,7 @@ export function Login({ onLogin, onNavigateToRegister, onNavigateToForgotPasswor
             style={styles.forgotPasswordContainer}
             onPress={onNavigateToForgotPassword}
             activeOpacity={0.7}
+            disabled={isLoading}
           >
             <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
           </TouchableOpacity>
@@ -148,17 +196,22 @@ export function Login({ onLogin, onNavigateToRegister, onNavigateToForgotPasswor
 
         {/* Nút Đăng Nhập */}
         <TouchableOpacity 
-          style={styles.signInButton}
+          style={[styles.signInButton, isLoading && styles.signInButtonDisabled]}
           onPress={handleSubmit}
           activeOpacity={0.8}
+          disabled={isLoading}
         >
-          <Text style={styles.signInButtonText}>Đăng Nhập</Text>
+          {isLoading ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+            <Text style={styles.signInButtonText}>Đăng Nhập</Text>
+          )}
         </TouchableOpacity>
 
         {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            Không có tài khoản ?{" "}
+            Không có tài khoản?{" "}
             <Text 
               style={styles.signUpLink}
               onPress={onNavigateToRegister}
@@ -258,6 +311,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 4,
   },
+  firebaseErrorContainer: {
+    backgroundColor: "rgba(220, 38, 38, 0.1)",
+    borderWidth: 1,
+    borderColor: Colors.light.destructive,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  firebaseErrorText: {
+    color: Colors.light.destructive,
+    fontSize: 14,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
   // Dòng chứa "Nhớ tài khoản" và "Quên mật khẩu"
   rememberForgotRow: {
     flexDirection: 'row',
@@ -325,6 +392,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 3,
+  },
+  signInButtonDisabled: {
+    backgroundColor: Colors.light.muted,
+    opacity: 0.7,
   },
   signInButtonText: {
     color: Colors.light.primaryForeground,
