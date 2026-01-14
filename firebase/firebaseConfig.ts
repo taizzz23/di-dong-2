@@ -19,12 +19,8 @@ const firebaseConfig = {
   appId: "1:791074240366:web:d877fb3af937c299f4337f",
   measurementId: "G-DJN4BK7W50"
 };
-
 const app = initializeApp(firebaseConfig);
-
 // Initialize Firebase Authentication and get a reference to the service
-export const auth = getAuth(app);
-
 // Initialize Firestore
 export const db = getFirestore(app);
 
@@ -35,5 +31,5 @@ export {
   EmailAuthProvider,
   sendPasswordResetEmail
 };
-
+export const auth = getAuth(app);
 export default app;
