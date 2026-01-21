@@ -154,6 +154,7 @@ export function OnlinePayment({
   };
 
   // Handle MoMo QR payment
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleMomoQRPayment = () => {
     if (!validateMomoPhone(momoPhone)) {
       setMomoError('Please enter a valid Vietnamese phone number (10 digits)');
@@ -491,7 +492,7 @@ export function OnlinePayment({
         <View style={styles.qrInstructions}>
           <Text style={styles.instructionsTitle}>Instructions:</Text>
           <Text style={styles.instruction}>1. Open MoMo app</Text>
-          <Text style={styles.instruction}>2. Tap "Scan QR Code"</Text>
+          <Text style={styles.instruction}>2. Tap Scan QR Code</Text>
           <Text style={styles.instruction}>3. Point camera at this QR code</Text>
           <Text style={styles.instruction}>4. Confirm payment</Text>
         </View>
@@ -547,7 +548,7 @@ export function OnlinePayment({
       </View>
       <Text style={styles.errorTitle}>Payment Failed</Text>
       <Text style={styles.errorMessage}>
-        We couldn't process your payment. Please try again or use another payment method.
+        We couldnt process your payment. Please try again or use another payment method.
       </Text>
       <TouchableOpacity
         style={styles.retryButton}

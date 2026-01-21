@@ -31,9 +31,9 @@ export function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
     const newErrors: { email?: string } = {};
 
     if (!email) {
-      newErrors.email = "Email là bắt buộc";
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Email không hợp lệ";
+      newErrors.email = "Invalid email address";
     }
 
     setErrors(newErrors);
@@ -71,8 +71,8 @@ export function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
 
       // Hiển thị thông báo thành công
       Alert.alert(
-        "✅ Email đã được gửi!",
-        `Firebase đã gửi email reset mật khẩu đến ${email}. Vui lòng kiểm tra hộp thư (kể cả spam).`,
+        "✅ The email has been sent!",
+        `Firebase has sent a password reset email to ${email}. Please check your inbox (including spam).`,
         [
           { 
             text: "OK", 
@@ -85,25 +85,25 @@ export function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
     } catch (error: any) {
       console.error("Firebase reset password error:", error);
       
-      let errorMessage = "Đã có lỗi xảy ra. Vui lòng thử lại sau.";
+      let errorMessage = "An error occurred. Please try again later.";
       
       // Xử lý Firebase error codes
       switch (error.code) {
         case 'auth/invalid-email':
-          errorMessage = "Email không hợp lệ.";
+          errorMessage = "Invalid email address.";
           break;
         case 'auth/user-not-found':
-          errorMessage = "Email không tồn tại trong hệ thống.";
+          errorMessage = "The email address does not exist in the system.";
           break;
         case 'auth/too-many-requests':
-          errorMessage = "Quá nhiều yêu cầu. Vui lòng thử lại sau ít phút.";
+          errorMessage = "Too many requests. Please try again in a few minutes.";
           break;
         case 'auth/operation-not-allowed':
-          errorMessage = "Chức năng gửi email reset chưa được kích hoạt trong Firebase Console.";
+          errorMessage = "The email reset function is not enabled in the Firebase Console.";
           break;
         default:
           if (error.message.includes('network')) {
-            errorMessage = "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.";
+            errorMessage = "Unable to connect to the server. Please check your network connection.";
           }
       }
       
@@ -141,14 +141,15 @@ export function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
       }, 1000);
 
       Alert.alert(
-        "🔄 Đã gửi lại",
-        "Email reset mật khẩu đã được gửi lại thành công."
+        "🔄 Sent again",
+        "Password reset email has been sent successfully."
       );
       
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       Alert.alert(
-        "❌ Lỗi",
-        "Không thể gửi lại email. Vui lòng thử lại sau."
+        "❌ error",
+        "Unable to resend email. Please try again later."
       );
     } finally {
       setIsLoading(false);
@@ -168,7 +169,7 @@ export function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
         activeOpacity={0.7}
         disabled={isLoading}
       >
-        <Text style={styles.backButtonText}>← Quay lại đăng nhập</Text>
+        <Text style={styles.backButtonText}>← Back to login</Text>
       </TouchableOpacity>
 
       {/* Logo */}
@@ -182,11 +183,11 @@ export function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
 
       {/* Tiêu đề */}
       <View style={styles.header}>
-        <Text style={styles.title}>Quên Mật Khẩu</Text>
+        <Text style={styles.title}>forgotpassword</Text>
         <Text style={styles.subtitle}>
           {isSubmitted 
-            ? `📧 Email đã được gửi đến ${email}`
-            : "Nhập email tài khoản của bạn để nhận link đặt lại mật khẩu"
+            ? `📧 The email has been sent. ${email}`
+            : "Enter your account email to receive a password reset link."
           }
         </Text>
       </View>
@@ -195,7 +196,7 @@ export function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
       {!isSubmitted ? (
         <View style={styles.form}>
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email đăng ký</Text>
+            <Text style={styles.label}>Registration email</Text>
             <TextInput
               style={[styles.input, errors.email && styles.inputError]}
               value={email}
@@ -231,16 +232,16 @@ export function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
           <View style={styles.noteContainer}>
             <Text style={styles.noteTitle}>ℹ️ Thông tin email reset:</Text>
             <Text style={styles.noteText}>
-              • Email sẽ được gửi từ <Text style={styles.highlight}>noreply@consolemart.firebaseapp.com</Text>
+              • The email will be sent from <Text style={styles.highlight}>noreply@consolemart.firebaseapp.com</Text>
             </Text>
             <Text style={styles.noteText}>
-              • Kiểm tra cả hộp thư <Text style={styles.highlight}>Spam/Junk</Text>
+              • Check your entire mailbox. <Text style={styles.highlight}>Spam/Junk</Text>
             </Text>
             <Text style={styles.noteText}>
-              • Link có hiệu lực trong <Text style={styles.highlight}>24 giờ</Text>
+              • The link is valid in <Text style={styles.highlight}>24 giờ</Text>
             </Text>
             <Text style={styles.noteText}>
-              • Click link sẽ mở trang web để reset mật khẩu
+              • Clicking this link will open the website to reset your password.
             </Text>
           </View>
         </View>
@@ -250,7 +251,7 @@ export function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
             <Text style={styles.successIconText}>✓</Text>
           </View>
           
-          <Text style={styles.successTitle}>Đã gửi thành công!</Text>
+          <Text style={styles.successTitle}>Sent successfully!</Text>
           
           <View style={styles.emailDisplay}>
             <Text style={styles.emailLabel}>Gửi đến:</Text>
@@ -278,12 +279,12 @@ export function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
           </View>
           
           <View style={styles.instructions}>
-            <Text style={styles.instructionsTitle}>Hướng dẫn tiếp theo:</Text>
-            <Text style={styles.instruction}>1. Mở email từ Firebase</Text>
-            <Text style={styles.instruction}>2. Click "Reset Password" trong email</Text>
-            <Text style={styles.instruction}>3. Link sẽ mở trong trình duyệt</Text>
-            <Text style={styles.instruction}>4. Tạo mật khẩu mới trên trang web</Text>
-            <Text style={styles.instruction}>5. Quay lại app và đăng nhập với mật khẩu mới</Text>
+            <Text style={styles.instructionsTitle}>guide:</Text>
+            <Text style={styles.instruction}>1. open email from Firebase</Text>
+            <Text style={styles.instruction}>2. Click reset password in email</Text>
+            <Text style={styles.instruction}>3. Link open in your internet browser</Text>
+            <Text style={styles.instruction}>4. create password on the website</Text>
+            <Text style={styles.instruction}>5. comeback app and login new password</Text>
           </View>
           
           <View style={styles.buttonGroup}>
@@ -298,7 +299,7 @@ export function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
               }}
               activeOpacity={0.8}
             >
-              <Text style={styles.secondaryButtonText}>Nhập email khác</Text>
+              <Text style={styles.secondaryButtonText}>Enter another email</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
@@ -306,7 +307,7 @@ export function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
               onPress={onBackToLogin}
               activeOpacity={0.8}
             >
-              <Text style={styles.primaryButtonText}>Quay lại đăng nhập</Text>
+              <Text style={styles.primaryButtonText}>Back to login</Text>
             </TouchableOpacity>
           </View>
         </View>

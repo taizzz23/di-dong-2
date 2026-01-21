@@ -39,6 +39,7 @@ export function Cart({
   onRemoveItem,
   onClearCart 
 }: CartProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showOnlinePayment, setShowOnlinePayment] = useState(false);
@@ -240,7 +241,7 @@ export function Cart({
               {/* Payment Info Note */}
               <View style={styles.noteSection}>
                 <Text style={styles.noteText}>
-                  💳 You'll select payment method on the next screen
+                  💳 Youll select payment method on the next screen
                 </Text>
               </View>
             </ScrollView>
